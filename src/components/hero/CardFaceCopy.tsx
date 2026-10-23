@@ -6,7 +6,7 @@ import type { CardFaceContent } from '@/components/hero/cardVersions'
 type Props = {
   content: CardFaceContent
   /** Moving silver band painted on the action tray glass (not the icons). */
-  actionGlareBandRef?: React.RefObject<HTMLDivElement | null>
+  actionGlareBandRef?: React.RefObject<HTMLDivElement>
 }
 
 type CardActionLinkProps = {
