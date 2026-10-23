@@ -4,12 +4,22 @@ import { FormEvent, useCallback, useEffect, useState } from 'react'
 import type { AdminCustomerRow } from '@/lib/admin-lists'
 import type { CreatedInvoice } from '@/lib/admin-types'
 
-type LineDraft = { description: string; amountDollars: string; quantity: string }
+type LineDraft = {
+  description: string
+  amountDollars: string
+  quantity: string
+  ref: string
+  hours: string
+  rateDollars: string
+}
 
 const emptyLine = (): LineDraft => ({
   description: '',
   amountDollars: '',
   quantity: '1',
+  ref: '',
+  hours: '',
+  rateDollars: '',
 })
 
 export default function AdminActions() {
@@ -84,12 +94,46 @@ export default function AdminActions() {
     setLastInvoice(null)
     try {
       const parsedLines = lines
-        .filter((l) => l.description.trim() && l.amountDollars.trim())
-        .map((l) => ({
-          description: l.description.trim(),
-          amountCents: Math.round(parseFloat(l.amountDollars) * 100),
-          quantity: Math.max(1, parseInt(l.quantity || '1', 10) || 1),
-        }))
+        .filter((l) => {
+          if (!l.description.trim()) return false
+          const hasHoursRate =
+            l.hours.trim() !== '' && l.rateDollars.trim() !== ''
+          return hasHoursRate || l.amountDollars.trim() !== ''
+        })
+        .map((l) => {
+          const hoursRaw = l.hours.trim()
+          const rateRaw = l.rateDollars.trim()
+          const hours =
+            hoursRaw !== '' ? parseFloat(hoursRaw) : undefined
+          const rateCents =
+            rateRaw !== ''
+              ? Math.round(parseFloat(rateRaw) * 100)
+              : undefined
+          const hasHoursRate =
+            hours != null &&
+            Number.isFinite(hours) &&
+            hours > 0 &&
+            rateCents != null &&
+            Number.isFinite(rateCents) &&
+            rateCents > 0
+
+          return {
+            description: l.description.trim(),
+            amountCents: hasHoursRate
+              ? Math.round(hours! * rateCents!)
+              : Math.round(parseFloat(l.amountDollars) * 100),
+            quantity: Math.max(1, parseInt(l.quantity || '1', 10) || 1),
+            ref: l.ref.trim() || undefined,
+            hours: hasHoursRate ? hours : undefined,
+            rateCents: hasHoursRate ? rateCents : undefined,
+          }
+        })
+
+      if (!parsedLines.length) {
+        setError('Add at least one line with a description and amount (or hours + rate).')
+        setBusy(null)
+        return
+      }
 
       const res = await fetch('/api/admin/invoices/create', {
         method: 'POST',
@@ -294,42 +338,85 @@ export default function AdminActions() {
             placeholder="Project milestone 1"
           />
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-xs uppercase tracking-[0.14em] text-white/45">
               Line items
             </p>
+            <p className="text-[11px] text-white/35">
+              Default: description + amount + qty. Optional ref / hours / rate
+              are stored on the Stripe line (metadata) and shown on `/pay` when
+              set. Hours × rate fills the amount automatically.
+            </p>
             {lines.map((line, i) => (
-              <div key={i} className="grid grid-cols-6 gap-2">
-                <input
-                  className="col-span-3 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
-                  placeholder="Description"
-                  value={line.description}
-                  onChange={(e) => {
-                    const next = [...lines]
-                    next[i] = { ...line, description: e.target.value }
-                    setLines(next)
-                  }}
-                />
-                <input
-                  className="col-span-2 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
-                  placeholder="Amount $"
-                  value={line.amountDollars}
-                  onChange={(e) => {
-                    const next = [...lines]
-                    next[i] = { ...line, amountDollars: e.target.value }
-                    setLines(next)
-                  }}
-                />
-                <input
-                  className="col-span-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
-                  placeholder="Qty"
-                  value={line.quantity}
-                  onChange={(e) => {
-                    const next = [...lines]
-                    next[i] = { ...line, quantity: e.target.value }
-                    setLines(next)
-                  }}
-                />
+              <div
+                key={i}
+                className="space-y-2 rounded-xl border border-white/10 bg-white/[0.02] p-3"
+              >
+                <div className="grid grid-cols-6 gap-2">
+                  <input
+                    className="col-span-3 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
+                    placeholder="Description / work completed"
+                    value={line.description}
+                    onChange={(e) => {
+                      const next = [...lines]
+                      next[i] = { ...line, description: e.target.value }
+                      setLines(next)
+                    }}
+                  />
+                  <input
+                    className="col-span-2 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
+                    placeholder="Amount $"
+                    value={line.amountDollars}
+                    onChange={(e) => {
+                      const next = [...lines]
+                      next[i] = { ...line, amountDollars: e.target.value }
+                      setLines(next)
+                    }}
+                    disabled={Boolean(line.hours.trim() && line.rateDollars.trim())}
+                  />
+                  <input
+                    className="col-span-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
+                    placeholder="Qty"
+                    value={line.quantity}
+                    onChange={(e) => {
+                      const next = [...lines]
+                      next[i] = { ...line, quantity: e.target.value }
+                      setLines(next)
+                    }}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
+                    placeholder="Ref (optional)"
+                    value={line.ref}
+                    onChange={(e) => {
+                      const next = [...lines]
+                      next[i] = { ...line, ref: e.target.value }
+                      setLines(next)
+                    }}
+                  />
+                  <input
+                    className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
+                    placeholder="Hours (optional)"
+                    value={line.hours}
+                    onChange={(e) => {
+                      const next = [...lines]
+                      next[i] = { ...line, hours: e.target.value }
+                      setLines(next)
+                    }}
+                  />
+                  <input
+                    className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-sm"
+                    placeholder="Rate $/hr (optional)"
+                    value={line.rateDollars}
+                    onChange={(e) => {
+                      const next = [...lines]
+                      next[i] = { ...line, rateDollars: e.target.value }
+                      setLines(next)
+                    }}
+                  />
+                </div>
               </div>
             ))}
             <button

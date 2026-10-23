@@ -10,6 +10,8 @@ export type CardFaceContent = {
   email?: string
   linkedin?: string
   portfolio?: string
+  /** Internal or absolute URL for Cal.com booking */
+  book?: string
   /** Internal or absolute URL for Stripe / payment checkout */
   pay?: string
   /** Internal admin dashboard (shield control) */
@@ -36,6 +38,7 @@ export const CARD_COPY: CardCopy = {
     email: 'jeanpierregrgs@gmail.com',
     linkedin: 'https://www.linkedin.com/in/jean-pierre-georges',
     portfolio: '/portfolio',
+    book: '/book',
     pay: '/pay',
     admin: '/admin',
   },

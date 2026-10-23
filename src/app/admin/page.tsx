@@ -3,11 +3,13 @@ import AdminLists from '@/components/admin/AdminLists'
 import AdminActions from '@/components/admin/AdminActions'
 import AdminActivity from '@/components/admin/AdminActivity'
 import AdminCatalog from '@/components/admin/AdminCatalog'
+import AdminBookings from '@/components/admin/AdminBookings'
 
 export default function AdminPage() {
   return (
     <div className="space-y-14">
       <AdminOverview />
+      <AdminBookings />
       <AdminActions />
       <AdminLists />
       <AdminActivity />

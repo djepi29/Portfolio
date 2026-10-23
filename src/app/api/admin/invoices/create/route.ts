@@ -20,6 +20,9 @@ export async function POST(request: Request) {
         description: string
         amountCents: number
         quantity?: number
+        ref?: string
+        hours?: number
+        rateCents?: number
       }>
     }
 

@@ -56,6 +56,73 @@ export function getStripePublishableKey(): string {
   return key
 }
 
+function toSafeAddress(
+  addr: Stripe.Address | null | undefined
+): SafeInvoice['customerAddress'] {
+  if (!addr) return null
+  const empty =
+    !addr.line1 &&
+    !addr.line2 &&
+    !addr.city &&
+    !addr.state &&
+    !addr.postal_code &&
+    !addr.country
+  if (empty) return null
+  return {
+    line1: addr.line1 ?? null,
+    line2: addr.line2 ?? null,
+    city: addr.city ?? null,
+    state: addr.state ?? null,
+    postalCode: addr.postal_code ?? null,
+    country: addr.country ?? null,
+  }
+}
+
+function parseOptionalNumber(raw: string | undefined): number | null {
+  if (raw == null || raw === '') return null
+  const n = Number(raw)
+  return Number.isFinite(n) ? n : null
+}
+
+/** Fallback when line metadata did not round-trip; we also encode in description. */
+function parseExtrasFromDescription(description: string | null): {
+  ref: string | null
+  hours: number | null
+  rateCents: number | null
+} {
+  if (!description) return { ref: null, hours: null, rateCents: null }
+  const hoursMatch = description.match(
+    /\((\d+(?:\.\d+)?)\s*hrs?\s*@\s*\$?([\d,.]+)\/hr\)/i
+  )
+  let hours: number | null = null
+  let rateCents: number | null = null
+  if (hoursMatch) {
+    hours = Number(hoursMatch[1])
+    const rate = Number(hoursMatch[2].replace(/,/g, ''))
+    if (Number.isFinite(rate)) rateCents = Math.round(rate * 100)
+    if (!Number.isFinite(hours!)) hours = null
+  }
+  const refMatch = description.match(/^([A-Za-z0-9][A-Za-z0-9 _.-]{0,40}?)\s*—\s*/)
+  return {
+    ref: refMatch?.[1]?.trim() || null,
+    hours,
+    rateCents,
+  }
+}
+
+function mapInvoiceLine(line: Stripe.InvoiceLineItem): SafeInvoice['lines'][number] {
+  const meta = line.metadata ?? {}
+  const fromDesc = parseExtrasFromDescription(line.description ?? null)
+  return {
+    description: line.description ?? null,
+    amount: line.amount,
+    quantity: line.quantity ?? null,
+    ref: meta.ref?.trim() || fromDesc.ref,
+    hours: parseOptionalNumber(meta.hours) ?? fromDesc.hours,
+    rateCents: parseOptionalNumber(meta.rate_cents) ?? fromDesc.rateCents,
+  }
+}
+
 export function toSafeInvoice(invoice: Stripe.Invoice): SafeInvoice {
   return {
     id: invoice.id,
@@ -67,14 +134,13 @@ export function toSafeInvoice(invoice: Stripe.Invoice): SafeInvoice {
     total: invoice.total,
     customerName: invoice.customer_name ?? null,
     customerEmail: invoice.customer_email ?? null,
+    customerAddress: toSafeAddress(invoice.customer_address),
     description: invoice.description ?? null,
+    created: invoice.created ?? null,
     dueDate: invoice.due_date ?? null,
     hostedInvoiceUrl: invoice.hosted_invoice_url ?? null,
-    lines: (invoice.lines?.data ?? []).map((line) => ({
-      description: line.description ?? null,
-      amount: line.amount,
-      quantity: line.quantity ?? null,
-    })),
+    invoicePdf: invoice.invoice_pdf ?? null,
+    lines: (invoice.lines?.data ?? []).map(mapInvoiceLine),
   }
 }
 

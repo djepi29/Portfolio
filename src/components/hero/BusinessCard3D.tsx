@@ -60,6 +60,7 @@ export default function BusinessCard3D() {
   const frontGlareRef = useRef<HTMLDivElement>(null)
   const frontEdgeRef = useRef<HTMLDivElement>(null)
   const backGlareRef = useRef<HTMLDivElement>(null)
+  const actionGlareBandRef = useRef<HTMLDivElement>(null)
   const frontFaceRef = useRef<HTMLDivElement>(null)
 
   const dragRef = useRef<DragState>({
@@ -156,6 +157,18 @@ export default function BusinessCard3D() {
           transparent 55%
         )
       `
+    }
+
+    if (actionGlareBandRef.current) {
+      // Always track rotateY — this is user-driven specular feedback, not
+      // decorative autoplay. (prefers-reduced-motion was previously hiding it.)
+      const rad = (y * Math.PI) / 180
+      const t = (Math.sin(rad) + 1) / 2 // 0 → 1 as y rotates
+      const xPct = -70 + t * 160
+      actionGlareBandRef.current.style.transform = `translateX(${xPct}%) skewX(-18deg)`
+      actionGlareBandRef.current.style.opacity = reduceMotionRef.current
+        ? '0.5'
+        : String(0.8 + rim * 0.2)
     }
   }, [])
 
@@ -532,7 +545,10 @@ export default function BusinessCard3D() {
             <div className="pointer-events-none absolute top-0 left-0 w-[40%] h-[2px] bg-gradient-to-r from-[#ff8a8a]/40 via-[#ff5c5c]/20 to-transparent" />
 
             <CardVisualBackground current={visualIndex} />
-            <CardFaceCopy content={CARD_COPY.back} />
+            <CardFaceCopy
+              content={CARD_COPY.back}
+              actionGlareBandRef={actionGlareBandRef}
+            />
           </div>
         </div>
       </div>

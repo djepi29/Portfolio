@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PayPage() {
   return (
     <section className="relative isolate min-h-[100svh] overflow-x-hidden bg-[#07080c] text-white">
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
+      <div className="pointer-events-none absolute inset-0 print:hidden" aria-hidden>
         <div
           className="absolute -top-32 left-[8%] h-[70vh] w-[55vw] max-w-[720px] rounded-full opacity-80 blur-[100px]"
           style={{
@@ -33,8 +33,8 @@ export default function PayPage() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
-        <div className="space-y-2">
+      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-4xl flex-col items-center justify-center gap-6 px-4 py-12 sm:py-16 print:min-h-0 print:justify-start print:py-0 print:px-0">
+        <div className="space-y-2 text-center print:hidden">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/45">
             Kanson Wouj Digital
           </p>
@@ -42,7 +42,8 @@ export default function PayPage() {
             Pay invoice
           </h1>
           <p className="mx-auto max-w-sm text-sm leading-relaxed text-white/60">
-            Enter the invoice code from your email to unlock secure checkout.
+            Enter the invoice code from your email to view your invoice and pay
+            securely.
           </p>
         </div>
 

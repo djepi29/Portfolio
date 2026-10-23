@@ -32,12 +32,24 @@ export async function createAdminCustomer(input: {
   }
 }
 
+export type DraftInvoiceLine = {
+  description: string
+  /** Unit amount in cents (before quantity). Ignored when hours+rate set. */
+  amountCents: number
+  quantity?: number
+  /** Optional extras stored in Stripe line metadata for the /pay document. */
+  ref?: string
+  hours?: number
+  /** Hourly rate in cents. */
+  rateCents?: number
+}
+
 export async function createDraftInvoice(input: {
   customerId: string
   currency?: string
   daysUntilDue?: number
   description?: string
-  lines: Array<{ description: string; amountCents: number; quantity?: number }>
+  lines: DraftInvoiceLine[]
 }): Promise<CreatedInvoice> {
   const stripe = getStripeAdmin()
   const customerId = input.customerId.trim()
@@ -49,6 +61,14 @@ export async function createDraftInvoice(input: {
 
   for (const line of input.lines) {
     if (!line.description.trim()) throw new Error('Each line needs a description.')
+    const hasHoursRate =
+      line.hours != null &&
+      Number.isFinite(line.hours) &&
+      line.hours > 0 &&
+      line.rateCents != null &&
+      Number.isFinite(line.rateCents) &&
+      line.rateCents > 0
+    if (hasHoursRate) continue
     if (!Number.isFinite(line.amountCents) || line.amountCents <= 0) {
       throw new Error('Line amounts must be positive (cents).')
     }
@@ -65,12 +85,55 @@ export async function createDraftInvoice(input: {
 
   for (const line of input.lines) {
     const qty = line.quantity && line.quantity > 0 ? line.quantity : 1
+    const hours =
+      line.hours != null && Number.isFinite(line.hours) && line.hours > 0
+        ? line.hours
+        : null
+    const rateCents =
+      line.rateCents != null &&
+      Number.isFinite(line.rateCents) &&
+      line.rateCents > 0
+        ? Math.round(line.rateCents)
+        : null
+
+    let unitAmountCents = Math.round(line.amountCents)
+    let quantity = qty
+
+    if (hours != null && rateCents != null) {
+      // Store full line total as a single unit; hours/rate live in metadata.
+      unitAmountCents = Math.round(hours * rateCents)
+      quantity = 1
+    }
+
+    if (!Number.isFinite(unitAmountCents) || unitAmountCents <= 0) {
+      throw new Error('Line amounts must be positive (cents).')
+    }
+
+    const ref = line.ref?.trim() || ''
+    const baseDescription = line.description.trim()
+    // Keep description human-readable on Stripe's own PDF; structured
+    // ref/hours/rate also go in metadata for the /pay document.
+    const description =
+      hours != null && rateCents != null
+        ? `${ref ? `${ref} — ` : ''}${baseDescription} (${hours} hrs @ $${(rateCents / 100).toFixed(2)}/hr)`
+        : ref
+          ? `${ref} — ${baseDescription}`
+          : baseDescription
+
+    const metadata: Record<string, string> = {}
+    if (ref) metadata.ref = ref
+    if (hours != null) metadata.hours = String(hours)
+    if (rateCents != null) metadata.rate_cents = String(rateCents)
+
     await stripe.invoiceItems.create({
       customer: customerId,
       invoice: invoice.id,
       currency,
-      amount: Math.round(line.amountCents) * qty,
-      description: line.description.trim(),
+      // amount must equal unit × quantity; quantity is exposed on the invoice line.
+      amount: unitAmountCents * quantity,
+      quantity,
+      description,
+      ...(Object.keys(metadata).length ? { metadata } : {}),
     })
   }
 

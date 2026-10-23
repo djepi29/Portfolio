@@ -328,3 +328,138 @@
         display: block;
       }
 }
+
+/* Portfolio — drifting aurora / fog
+   Kept moving even with prefers-reduced-motion: this page’s intentional
+   ambience was otherwise invisible on machines with OS Reduce Motion on. */
+@keyframes auroraDriftA {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(35vw, 18vh, 0) scale(1.18);
+  }
+  55% {
+    transform: translate3d(-20vw, 40vh, 0) scale(0.9);
+  }
+  80% {
+    transform: translate3d(18vw, -15vh, 0) scale(1.12);
+  }
+}
+
+@keyframes auroraDriftB {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  30% {
+    transform: translate3d(-40vw, 22vh, 0) scale(1.2);
+  }
+  60% {
+    transform: translate3d(-15vw, -30vh, 0) scale(0.88);
+  }
+  85% {
+    transform: translate3d(25vw, 10vh, 0) scale(1.1);
+  }
+}
+
+@keyframes auroraDriftC {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  35% {
+    transform: translate3d(30vw, -35vh, 0) scale(1.22);
+  }
+  70% {
+    transform: translate3d(-28vw, -10vh, 0) scale(0.92);
+  }
+}
+
+@keyframes auroraDriftD {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  20% {
+    transform: translate3d(-25vw, -25vh, 0) scale(1.15);
+  }
+  50% {
+    transform: translate3d(40vw, 15vh, 0) scale(1.05);
+  }
+  75% {
+    transform: translate3d(10vw, 35vh, 0) scale(0.9);
+  }
+}
+
+@keyframes auroraDriftE {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40% {
+    transform: translate3d(22vw, 40vh, 0) scale(1.2);
+  }
+  70% {
+    transform: translate3d(-35vw, 5vh, 0) scale(0.94);
+  }
+}
+
+.animate-aurora-a {
+  animation: auroraDriftA 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-aurora-b {
+  animation: auroraDriftB 26s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-aurora-c {
+  animation: auroraDriftC 17s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-aurora-d {
+  animation: auroraDriftD 23s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-aurora-e {
+  animation: auroraDriftE 19s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* /pay invoice — print / Save as PDF */
+@media print {
+  @page {
+    margin: 12mm;
+    size: letter;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #0f172a !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #invoice-document,
+  #invoice-document * {
+    visibility: visible;
+  }
+
+  #invoice-document {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}

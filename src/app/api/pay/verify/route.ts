@@ -4,6 +4,7 @@ import {
   normalizeInvoiceCode,
   toSafeInvoice,
 } from '@/lib/stripe'
+import { hasInvoiceBankDetails } from '@/lib/invoice-brand'
 
 export const runtime = 'nodejs'
 
@@ -30,7 +31,9 @@ export async function POST(request: Request) {
 
     const safe = toSafeInvoice(invoice)
     // Never send the hosted URL until checkout re-validates the code.
+    // invoicePdf is OK after code verify — used for optional Stripe PDF download.
     const publicInvoice = { ...safe, hostedInvoiceUrl: null as string | null }
+    const bankAvailable = hasInvoiceBankDetails()
 
     if (safe.status === 'draft') {
       return NextResponse.json(
@@ -50,6 +53,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         invoice: publicInvoice,
         payable: false,
+        bankAvailable,
         message: 'This invoice is already paid. Thank you.',
       })
     }
@@ -74,6 +78,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       invoice: publicInvoice,
       payable: true,
+      bankAvailable,
       message: null,
     })
   } catch (err) {
