@@ -47,6 +47,9 @@ export default function BookPage() {
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Book a session
           </h1>
+          <p className="mx-auto max-w-md text-sm leading-relaxed text-white/65 sm:text-base">
+            Book a 15, 30, or 45-minute session with Jean Pierre Georges.
+          </p>
         </div>
 
         {!username || !publicUrl ? (

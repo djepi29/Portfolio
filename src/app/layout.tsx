@@ -12,8 +12,11 @@ export const metadata: Metadata = {
     'web developer Ottawa, Kanson Wouj Digital, full stack developer, custom web apps',
   authors: [{ name: 'Kanson Wouj Digital' }],
   icons: {
-    icon: [{ url: '/logo.png', type: 'image/png' }],
-    apple: '/logo.png',
+    icon: [
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+      { url: '/favicon.ico', sizes: '48x48' },
+    ],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
   },
   openGraph: {
     title: 'Kanson Wouj Digital | Full Stack Web Developer',
