@@ -4,6 +4,7 @@ import PayGate from '@/components/pay/PayGate'
 export const metadata: Metadata = {
   title: 'Pay | Kanson Wouj Digital',
   description: 'Secure invoice payment via Stripe.',
+  robots: { index: false, follow: false },
 }
 
 export default function PayPage() {

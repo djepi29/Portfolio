@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 type Props = {
   /** Overall mark height */
   className?: string
@@ -10,21 +8,18 @@ type Props = {
  * Colored bird mark + white wordmark for dark surfaces.
  * Clips the full logo asset so only the bird keeps brand color.
  */
-export default function BrandLogoColor({ className = '', priority }: Props) {
+export default function BrandLogoColor({ className = '' }: Props) {
   return (
     <div className={`flex items-center gap-2.5 sm:gap-3 ${className}`}>
       {/* Bird only — natural colors */}
-      <div className="relative h-[4.75rem] sm:h-[5.5rem] w-[4.25rem] sm:w-[5rem] shrink-0 overflow-hidden">
-        <Image
-          src="/logo.png"
-          alt=""
-          width={360}
-          height={112}
-          className="absolute left-0 top-1/2 h-[92%] w-auto max-w-none -translate-y-1/2 object-contain object-left drop-shadow-[0_0_14px_rgba(227,30,36,0.35)]"
-          priority={priority}
-          aria-hidden
-        />
-      </div>
+      <div
+        aria-hidden
+        className="h-[4.75rem] sm:h-[5.5rem] w-[3.7rem] sm:w-[4.35rem] shrink-0 bg-left bg-no-repeat drop-shadow-[0_0_14px_rgba(227,30,36,0.35)]"
+        style={{
+          backgroundImage: 'url(/logo.png)',
+          backgroundSize: 'auto 92%',
+        }}
+      />
 
       {/* Wordmark — white */}
       <div className="flex flex-col justify-center leading-none text-white">

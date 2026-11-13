@@ -16,3 +16,20 @@ npm-debug.log*
 
 # typescript
 *.tsbuildinfo
+
+# Local 3D testing. These stay on this machine and are not part of the live site.
+/src/app/3dtesting/
+/src/components/hero/PdfCardPreview.tsx
+/Kanson-Wouj-Card.pdf
+/Kanson_Wouj_Character/
+/public/bird.backup.glb
+/public/tripo-multiview/
+/scripts/__pycache__/
+/scripts/analyze_v1_mesh.py
+/scripts/build_bird_v3_from_v1.py
+/scripts/build_modular_bird_v2.py
+/scripts/find_v1_tpose.py
+/scripts/hunyuan_local_status.py
+/scripts/refs/
+/scripts/tripo_generate.py
+/scripts/v1_mesh_analysis.txt

@@ -8,8 +8,12 @@ export type CardFaceContent = {
   footerNote?: string
   layout?: 'default' | 'logo-statement' | 'contact'
   email?: string
+  /** Display form, e.g. 819-329-6146. Rendered under the email. */
+  phone?: string
   linkedin?: string
   portfolio?: string
+  /** Internal or absolute URL for the blog hub */
+  blog?: string
   /** Internal or absolute URL for Cal.com booking */
   book?: string
   /** Internal or absolute URL for Stripe / payment checkout */
@@ -38,6 +42,7 @@ export const CARD_COPY: CardCopy = {
     email: 'jeanpierregrgs@gmail.com',
     linkedin: 'https://www.linkedin.com/in/jean-pierre-georges',
     portfolio: '/portfolio',
+    blog: '/blog',
     book: '/book',
     pay: '/pay',
     admin: '/admin',

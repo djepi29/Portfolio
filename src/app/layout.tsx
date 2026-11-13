@@ -5,6 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.kansonwouj.dev'),
   title: 'Kanson Wouj Digital | Full Stack Web Developer — Ottawa',
   description:
     'Apps, websites, and platforms for businesses that need to move online. Ottawa full stack web developer.',

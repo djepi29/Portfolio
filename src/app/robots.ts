@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const SITE_URL = 'https://www.kansonwouj.dev'
+import { SITE_URL } from '@/content/writing'
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -7,6 +7,11 @@ type Props = {
   content: CardFaceContent
   /** Moving silver band painted on the action tray glass (not the icons). */
   actionGlareBandRef?: React.RefObject<HTMLDivElement>
+  /**
+   * Replaces the bottom-corner action buttons (and the admin hotspot).
+   * Used by the print-card preview.
+   */
+  corner?: React.ReactNode
 }
 
 type CardActionLinkProps = {
@@ -50,7 +55,7 @@ function ActionDot() {
   )
 }
 
-export default function CardFaceCopy({ content, actionGlareBandRef }: Props) {
+export default function CardFaceCopy({ content, actionGlareBandRef, corner }: Props) {
   if (content.layout === 'logo-statement') {
     return (
       <div className="pointer-events-none relative z-[1] flex h-full flex-col justify-center gap-5 p-5 sm:p-6 text-[#f3f4f6]">
@@ -74,6 +79,12 @@ export default function CardFaceCopy({ content, actionGlareBandRef }: Props) {
       : `https://${content.portfolio}`
     : undefined
 
+  const blogHref = content.blog
+    ? content.blog.startsWith('http') || content.blog.startsWith('/')
+      ? content.blog
+      : `https://${content.blog}`
+    : undefined
+
   const bookHref = content.book
     ? content.book.startsWith('http') || content.book.startsWith('/')
       ? content.book
@@ -95,19 +106,24 @@ export default function CardFaceCopy({ content, actionGlareBandRef }: Props) {
   const hasActionButtons = Boolean(
     (content.linkedin && linkedinHref) ||
       (content.portfolio && portfolioHref) ||
+      (content.blog && blogHref) ||
       (content.book && bookHref) ||
       (content.pay && payHref)
   )
 
   const actionCount = [
     content.portfolio && portfolioHref,
+    content.blog && blogHref,
     content.book && bookHref,
     content.pay && payHref,
     content.linkedin && linkedinHref,
   ].filter(Boolean).length
 
-  const actionPadClass =
-    actionCount >= 4
+  const actionPadClass = corner
+    ? 'pr-[8.75rem] sm:pr-[10rem] pb-[8.25rem] sm:pb-[9.5rem]'
+    : actionCount >= 5
+      ? 'pr-[8.75rem] sm:pr-[11.75rem] pb-10 sm:pb-12'
+      : actionCount >= 4
       ? 'pr-[11rem] sm:pr-[13rem] pb-8 sm:pb-10'
       : actionCount >= 3
         ? 'pr-[8.5rem] sm:pr-[10rem] pb-8 sm:pb-10'
@@ -131,6 +147,23 @@ export default function CardFaceCopy({ content, actionGlareBandRef }: Props) {
               className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-current pointer-events-none"
             >
               <path d="M4 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v1H4V6zm0 3h16v9a2 2 0 01-2 2H6a2 2 0 01-2-2V9zm3 3h4v1H7v-1z" />
+            </svg>
+          ),
+        }
+      : null,
+    content.blog && blogHref
+      ? {
+          key: 'blog',
+          href: blogHref,
+          label: 'Blog',
+          external: blogHref.startsWith('http'),
+          icon: (
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden
+              className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-current pointer-events-none"
+            >
+              <path d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zm1.5 5h7v1.5h-7V8zm0 3.5h7V13h-7v-1.5zm0 3.5h4.5V16.5H8.5V15z" />
             </svg>
           ),
         }
@@ -196,7 +229,7 @@ export default function CardFaceCopy({ content, actionGlareBandRef }: Props) {
 
   return (
     <div className="pointer-events-none relative z-[1] flex h-full min-h-0 flex-col gap-2 p-3 sm:gap-3 sm:p-5 text-[#f3f4f6]">
-      {content.admin && adminHref ? (
+      {content.admin && adminHref && !corner ? (
         <AdminCornerReveal href={adminHref} />
       ) : null}
 
@@ -231,9 +264,24 @@ export default function CardFaceCopy({ content, actionGlareBandRef }: Props) {
             {content.email}
           </a>
         ) : null}
+        {content.phone ? (
+          <a
+            href={`tel:+1${content.phone.replace(/\D/g, '')}`}
+            data-card-link
+            className="pointer-events-auto relative z-20 block text-[10px] sm:text-xs text-white/70 hover:text-white transition-colors"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {content.phone}
+          </a>
+        ) : null}
       </div>
 
-      {hasActionButtons ? (
+      {corner ? (
+        <div className="pointer-events-none absolute bottom-6 right-6 z-20 sm:bottom-7 sm:right-7">
+          {corner}
+        </div>
+      ) : hasActionButtons ? (
         <div className="pointer-events-none absolute bottom-0 right-0 z-20 flex items-center overflow-visible rounded-tl-xl bg-[#1a0a0c]/70 py-0.5 pl-5 pr-4 backdrop-blur-sm sm:pl-7 sm:pr-5">
           {/* Silver sweep on tray glass only — icons sit above */}
           <div
